@@ -1,0 +1,28 @@
+[package]
+name = "google-auth-middleware"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Google OAuth authentication middleware with session management for Rust web applications"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Pick999999/google-auth-middleware"
+documentation = "https://docs.rs/google-auth-middleware"
+keywords = ["google", "oauth", "authentication", "middleware", "session"]
+categories = ["authentication", "web-programming"]
+readme = "README.md"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# Optional dependencies for different frameworks
+axum = { version = "0.7", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+
+[features]
+default = []
+axum = ["dep:axum"]
