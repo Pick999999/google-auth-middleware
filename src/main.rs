@@ -1,5 +1,6 @@
 // ============================================================
 // Google Auth Middleware Crate
+<<<<<<< HEAD
 // lib.rs - Complete and Ready to Compile
 // ============================================================
 
@@ -9,6 +10,14 @@ use std::fs;
 use std::path::Path;
 use std::sync::RwLock;
 use std::time::{Duration, SystemTime};
+=======
+// lib.rs
+// ============================================================
+
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::Path;
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
 
 // ============================================================
 // Error Types
@@ -116,7 +125,11 @@ pub fn is_user_authorized(
 /// Verify Google ID token and get user info
 pub async fn verify_google_token(
     id_token: &str,
+<<<<<<< HEAD
     _client_id: &str,
+=======
+    client_id: &str,
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
 ) -> Result<GoogleTokenInfo, AuthError> {
     let url = format!(
         "https://oauth2.googleapis.com/tokeninfo?id_token={}",
@@ -136,6 +149,13 @@ pub async fn verify_google_token(
         .await
         .map_err(|e| AuthError::ParseError(e.to_string()))?;
 
+<<<<<<< HEAD
+=======
+    // Verify client ID matches
+    // Note: Google returns 'aud' field for client_id verification
+    // This is simplified - in production, check the 'aud' field
+
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
     Ok(token_info)
 }
 
@@ -165,9 +185,81 @@ pub async fn authenticate_user(
 }
 
 // ============================================================
+<<<<<<< HEAD
 // Session Management
 // ============================================================
 
+=======
+// Axum Middleware (Optional)
+// ============================================================
+
+#[cfg(feature = "axum")]
+pub mod axum_middleware {
+    use super::*;
+    use axum::{
+        extract::{Request, State},
+        http::StatusCode,
+        middleware::Next,
+        response::{IntoResponse, Response},
+    };
+    use std::sync::Arc;
+
+    #[derive(Clone)]
+    pub struct AuthState {
+        pub config: Arc<GoogleAuthConfig>,
+    }
+
+    pub async fn google_auth_middleware(
+        State(auth_state): State<AuthState>,
+        mut request: Request,
+        next: Next,
+    ) -> Result<Response, AuthResponse> {
+        // Extract token from Authorization header
+        let auth_header = request
+            .headers()
+            .get("Authorization")
+            .and_then(|v| v.to_str().ok())
+            .ok_or(AuthResponse::Unauthorized("Missing Authorization header".into()))?;
+
+        let token = auth_header
+            .strip_prefix("Bearer ")
+            .ok_or(AuthResponse::Unauthorized("Invalid Authorization format".into()))?;
+
+        // Authenticate user
+        match authenticate_user(token, &auth_state.config).await {
+            Ok(user) => {
+                // Add user info to request extensions
+                request.extensions_mut().insert(user);
+                Ok(next.run(request).await)
+            }
+            Err(e) => Err(AuthResponse::Unauthorized(e.to_string())),
+        }
+    }
+
+    pub enum AuthResponse {
+        Unauthorized(String),
+    }
+
+    impl IntoResponse for AuthResponse {
+        fn into_response(self) -> Response {
+            match self {
+                AuthResponse::Unauthorized(msg) => {
+                    (StatusCode::UNAUTHORIZED, msg).into_response()
+                }
+            }
+        }
+    }
+}
+
+// ============================================================
+// Session Management
+// ============================================================
+
+use std::collections::HashMap;
+use std::sync::RwLock;
+use std::time::{Duration, SystemTime};
+
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
     pub session_id: String,
@@ -215,7 +307,11 @@ impl SessionStore {
 
     /// Generate a unique session ID
     pub fn generate_session_id() -> String {
+<<<<<<< HEAD
         use std::time::UNIX_EPOCH;
+=======
+        use std::time::{SystemTime, UNIX_EPOCH};
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -312,6 +408,7 @@ impl SessionStore {
 }
 
 // ============================================================
+<<<<<<< HEAD
 // Axum Middleware (Optional)
 // ============================================================
 
@@ -374,6 +471,8 @@ pub mod axum_middleware {
 }
 
 // ============================================================
+=======
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
 // Axum Session Middleware
 // ============================================================
 
@@ -510,6 +609,7 @@ mod tests {
         assert!(is_user_authorized("123", "test@example.com", &users));
         assert!(!is_user_authorized("999", "other@example.com", &users));
     }
+<<<<<<< HEAD
 
     #[test]
     fn test_session_lifecycle() {
@@ -535,3 +635,39 @@ mod tests {
         assert!(store.get_session(&session.session_id).is_err());
     }
 }
+=======
+}
+
+// ============================================================
+// Cargo.toml
+// ============================================================
+
+/*
+[package]
+name = "google-auth-middleware"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Google OAuth authentication middleware for Rust web applications"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourusername/google-auth-middleware"
+keywords = ["google", "oauth", "authentication", "middleware", "axum"]
+categories = ["authentication", "web-programming"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# Optional dependencies for different frameworks
+axum = { version = "0.7", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+
+[features]
+default = []
+axum = ["dep:axum"]
+*/
+>>>>>>> 95d6f33dfe5e5dbf03bf1f3a360871d168007b45
